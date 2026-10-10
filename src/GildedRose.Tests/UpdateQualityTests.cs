@@ -148,15 +148,36 @@ public class UpdateQualityTests
 
     public class ConjuredItems
     {
-        // Characterizes the CURRENT behavior: the system does not yet know
-        // about conjured items, so they degrade like normal items. This test
-        // will be replaced when the Conjured feature is implemented.
         [Fact]
-        public void Currently_degrades_like_a_normal_item()
+        public void Quality_degrades_twice_as_fast_as_a_normal_item()
         {
             var item = UpdateItem("Conjured Mana Cake", sellIn: 3, quality: 6);
             Assert.Equal(2, item.SellIn);
-            Assert.Equal(5, item.Quality);
+            Assert.Equal(4, item.Quality);
+        }
+
+        [Fact]
+        public void Quality_degrades_by_four_once_sell_date_has_passed()
+        {
+            var item = UpdateItem("Conjured Mana Cake", sellIn: 0, quality: 10);
+            Assert.Equal(-1, item.SellIn);
+            Assert.Equal(6, item.Quality);
+        }
+
+        [Theory]
+        [InlineData(5, 1)]  // -2 would go below zero
+        [InlineData(0, 3)]  // -4 would go below zero
+        public void Quality_is_never_negative(int sellIn, int quality)
+        {
+            var item = UpdateItem("Conjured Mana Cake", sellIn, quality);
+            Assert.Equal(0, item.Quality);
+        }
+
+        [Fact]
+        public void Any_item_whose_name_starts_with_Conjured_is_treated_as_conjured()
+        {
+            var item = UpdateItem("Conjured Sword of a Thousand Truths", sellIn: 10, quality: 10);
+            Assert.Equal(8, item.Quality);
         }
     }
 
